@@ -1,1 +1,1 @@
-supabase functions serve --no-verify-jwt
+supabase functions serve --no-verify-jwt --env-file ./supabase/.env.production
