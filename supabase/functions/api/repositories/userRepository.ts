@@ -19,21 +19,47 @@ export class UserRepository {
     return tokensData.map((token: { fcm_token: string }) => token.fcm_token);
   }
 
-  // userID와 fcmToken을 인풋으로 받아서 DB에 추가하는 함수
+  // userID와 fcmToken을 인풋으로 받아서 DB에 추가 또는 업데이트하는 함수
   async addFCMToken(userID: string, fcmToken: string): Promise<boolean> {
-    // fcm_tokens 테이블에 FCM 토큰 추가
-    const { error: insertError } = await supabase
+    // fcm_tokens 테이블에서 동일한 userID와 fcmToken이 존재하는지 확인
+    const { data: existingToken } = await supabase
       .from("fcm_tokens")
-      .insert([{ user_id: userID, fcm_token: fcmToken }]);
+      .select("*")
+      .eq("user_id", userID)
+      .eq("fcm_token", fcmToken)
+      .single();
 
-    // 삽입 시 에러가 발생하면 false 반환
-    if (insertError) {
-      console.error("Error inserting FCM token:", insertError.message);
-      return false;
+    // 동일한 데이터가 존재하면 업데이트
+    if (existingToken) {
+      const { error: updateError } = await supabase
+        .from("fcm_tokens")
+        .update({ fcm_token: fcmToken })
+        .eq("user_id", userID)
+        .eq("fcm_token", fcmToken);
+
+      // 업데이트 시 에러가 발생하면 false 반환
+      if (updateError) {
+        console.error("Error updating FCM token:", updateError.message);
+        return false;
+      }
+
+      // 성공적으로 업데이트되면 true 반환
+      return true;
+    } else {
+      // 동일한 데이터가 없으면 추가
+      const { error: insertError } = await supabase
+        .from("fcm_tokens")
+        .insert([{ user_id: userID, fcm_token: fcmToken }]);
+
+      // 삽입 시 에러가 발생하면 false 반환
+      if (insertError) {
+        console.error("Error inserting FCM token:", insertError.message);
+        return false;
+      }
+
+      // 성공적으로 삽입되면 true 반환
+      return true;
     }
-
-    // 성공적으로 삽입되면 true 반환
-    return true;
   }
 
   // userID와 fcmToken을 인풋으로 받아서 DB에서 삭제하는 함수
