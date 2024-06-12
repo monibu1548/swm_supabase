@@ -26,7 +26,7 @@ export class UserController {
         createResponse(
           ResponseCode.INVALID_ARGUMENTS,
           "Missing userID or fcmToken",
-          false,
+          null,
         ),
       );
     }
@@ -40,12 +40,12 @@ export class UserController {
         ? createResponse(
           ResponseCode.SUCCESS,
           "FCM token added successfully",
-          true,
+          null,
         )
         : createResponse(
           ResponseCode.SERVER_ERROR,
           "Failed to add FCM token",
-          false,
+          null,
         ),
     );
   }
@@ -58,7 +58,9 @@ export class UserController {
     const tokens = await this.userService.getFCMTokensByUserID(requestUser.id);
 
     // 토큰 목록을 JSON 형식으로 반환합니다.
-    return c.json(createResponse(ResponseCode.SUCCESS, "Success", tokens));
+    return c.json(
+      createResponse(ResponseCode.SUCCESS, "Success", { fcmTokens: tokens }),
+    );
   }
 
   // deleteFCMTokenV1 메서드는 FCM 토큰을 삭제하는 API 엔드포인트입니다.
@@ -74,7 +76,7 @@ export class UserController {
         createResponse(
           ResponseCode.INVALID_ARGUMENTS,
           "Missing userID or fcmToken",
-          false,
+          null,
         ),
       );
     }
@@ -91,12 +93,12 @@ export class UserController {
         ? createResponse(
           ResponseCode.SUCCESS,
           "FCM token deleted successfully",
-          true,
+          null,
         )
         : createResponse(
           ResponseCode.SERVER_ERROR,
           "Failed to delete FCM token",
-          false,
+          null,
         ),
     );
   }
