@@ -1,12 +1,14 @@
 import { ResponseCode } from "./responseCode.ts";
 
-export interface ResponseFormat<T> {
+// deno-lint-ignore no-explicit-any
+export interface ResponseFormat<T extends Record<string, any> | null> {
   code: ResponseCode;
   message: string;
   result: T;
 }
 
-export function createResponse<T>(
+// deno-lint-ignore no-explicit-any
+export function createResponse<T extends Record<string, any> | null>(
   code: ResponseCode,
   message: string,
   result: T,
