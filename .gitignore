@@ -3,7 +3,6 @@
 
 ### Deno ###
 /.idea/
-/.vscode/
 
 /node_modules
 
