@@ -21,20 +21,24 @@ export class UserRepository {
 
   // userID와 fcmToken을 인풋으로 받아서 DB에 추가 또는 업데이트하는 함수
   async addFCMToken(userID: string, fcmToken: string): Promise<boolean> {
-    // fcm_tokens 테이블에서 동일한 userID와 fcmToken이 존재하는지 확인
-    const { data: existingToken } = await supabase
+    // fcm_tokens 테이블에서 동일한 fcmToken이 존재하는지 확인
+    const { data: existingToken, error: selectError } = await supabase
       .from("fcm_tokens")
       .select("*")
-      .eq("user_id", userID)
       .eq("fcm_token", fcmToken)
       .single();
 
-    // 동일한 데이터가 존재하면 업데이트
+    // 선택 시 에러가 발생하면 false 반환
+    if (selectError && selectError.code !== "PGRST116") { // 'PGRST116'은 no rows 에러 코드
+      console.error("Error selecting FCM token:", selectError.message);
+      return false;
+    }
+
+    // 동일한 fcmToken이 존재하면 user_id를 업데이트
     if (existingToken) {
       const { error: updateError } = await supabase
         .from("fcm_tokens")
-        .update({ fcm_token: fcmToken })
-        .eq("user_id", userID)
+        .update({ user_id: userID })
         .eq("fcm_token", fcmToken);
 
       // 업데이트 시 에러가 발생하면 false 반환
@@ -46,7 +50,7 @@ export class UserRepository {
       // 성공적으로 업데이트되면 true 반환
       return true;
     } else {
-      // 동일한 데이터가 없으면 추가
+      // 동일한 fcmToken이 없으면 새로운 행 추가
       const { error: insertError } = await supabase
         .from("fcm_tokens")
         .insert([{ user_id: userID, fcm_token: fcmToken }]);
