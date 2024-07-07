@@ -1,5 +1,7 @@
+import { ResponseCode } from "./../lib/response/responseCode.ts";
 import { Context } from "https://deno.land/x/hono/mod.ts";
 import { UserService } from "../services/userService.ts";
+import { createResponse } from "../lib/response/responseFormat.ts";
 
 // UserController 클래스는 FCM 토큰을 관리하기 위한 컨트롤러입니다.
 export class UserController {
@@ -17,7 +19,13 @@ export class UserController {
 
     // fcmToken이 없는 경우 에러 메시지를 반환합니다.
     if (!fcmToken) {
-      return c.json("Missing userID or fcmToken");
+      return c.json(
+        createResponse(
+          ResponseCode.INVALID_ARGUMENTS,
+          "Missing userID or fcmToken",
+          null,
+        ),
+      );
     }
 
     // UserService를 통해 FCM 토큰을 추가합니다.
@@ -25,7 +33,17 @@ export class UserController {
 
     // 결과에 따라 적절한 메시지를 반환합니다.
     return c.json(
-      result ? "FCM token added successfully" : "Failed to add FCM token",
+      result
+        ? createResponse(
+          ResponseCode.SUCCESS,
+          "FCM token added successfully",
+          null,
+        )
+        : createResponse(
+          ResponseCode.SERVER_ERROR,
+          "Failed to add FCM token",
+          null,
+        ),
     );
   }
 
@@ -35,7 +53,9 @@ export class UserController {
     const tokens = await this.userService.getFCMTokensByUserID("mock_user_id");
 
     // 토큰 목록을 JSON 형식으로 반환합니다.
-    return c.json(tokens);
+    return c.json(
+      createResponse(ResponseCode.SUCCESS, "Success", { fcmTokens: tokens }),
+    );
   }
 
   // deleteFCMTokenV1 메서드는 FCM 토큰을 삭제하는 API 엔드포인트입니다.
@@ -45,7 +65,13 @@ export class UserController {
 
     // fcmToken이 없는 경우 에러 메시지를 반환합니다.
     if (!fcmToken) {
-      return c.json("Missing userID or fcmToken");
+      return c.json(
+        createResponse(
+          ResponseCode.INVALID_ARGUMENTS,
+          "Missing userID or fcmToken",
+          null,
+        ),
+      );
     }
 
     // UserService를 통해 FCM 토큰을 삭제합니다.
@@ -56,7 +82,17 @@ export class UserController {
 
     // 결과에 따라 적절한 메시지를 반환합니다.
     return c.json(
-      result ? "FCM token deleted successfully" : "Failed to delete FCM token",
+      result
+        ? createResponse(
+          ResponseCode.SUCCESS,
+          "FCM token deleted successfully",
+          null,
+        )
+        : createResponse(
+          ResponseCode.SERVER_ERROR,
+          "Failed to delete FCM token",
+          null,
+        ),
     );
   }
 }
